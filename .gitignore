@@ -11,6 +11,9 @@ yarn-error.log*
 .pid
 *.pid
 
+# Local app data
+.data/
+
 # Environment / local editor files
 .env
 .env.*

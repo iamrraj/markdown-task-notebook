@@ -20,7 +20,8 @@ If no private reporting channel has been set up yet, establish one before publis
 
 ## Current Security Notes
 
-- The app is local-first and stores notes in browser `localStorage`.
+- The app is local-first and stores notes in an internal on-disk file:
+  - `/Users/rahulraj/markdown-task-notebook/.data/app-state.json`
 - Markdown preview rendering uses `marked`.
 - Rendered output is sanitized with `DOMPurify`.
 - There is no backend database or account system in the current project.
@@ -31,5 +32,5 @@ Security review is especially relevant for:
 
 - markdown rendering
 - HTML sanitization
-- browser storage handling
+- local file persistence handling
 - third-party CDN dependencies

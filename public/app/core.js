@@ -11,11 +11,13 @@ export const state = {
   documents: [],
   activeDocumentId: null,
   saveTimer: null,
+  savePromise: null,
   currentView: "table",
   notebookPane: "editor",
   theme: "light",
   themeSource: "system",
   sidebarCollapsed: false,
+  hasLoadedFromDisk: false,
   filters: {
     search: "",
     date: "all",
@@ -149,7 +151,6 @@ export function applyTheme(theme) {
   state.theme = theme;
   state.themeSource = "user";
   document.documentElement.classList.toggle("dark", theme === "dark");
-  localStorage.setItem(THEME_KEY, theme);
   if (elements.markdownThemeStylesheet) {
     elements.markdownThemeStylesheet.href = MARKDOWN_THEME_LINKS[theme] || MARKDOWN_THEME_LINKS.light;
   }
@@ -159,6 +160,7 @@ export function applyTheme(theme) {
   if (elements.themeToggleButtonSearch) elements.themeToggleButtonSearch.textContent = nextLabel;
   if (elements.themeToggleButtonTags) elements.themeToggleButtonTags.textContent = nextLabel;
   if (elements.themeToggleButtonRecent) elements.themeToggleButtonRecent.textContent = nextLabel;
+  if (state.hasLoadedFromDisk) queueSave();
 }
 
 export function toggleTheme() {
@@ -173,7 +175,7 @@ export function applySidebarState(collapsed) {
   state.sidebarCollapsed = collapsed;
   if (elements.appShell) elements.appShell.classList.toggle("sidebar-collapsed", collapsed);
   if (elements.collapseIcon) elements.collapseIcon.textContent = collapsed ? "»" : "«";
-  localStorage.setItem(SIDEBAR_KEY, collapsed ? "collapsed" : "expanded");
+  if (state.hasLoadedFromDisk) queueSave();
 }
 
 export function setActiveNav(view) {
@@ -227,12 +229,44 @@ export function insertAtCursor(textToInsert, options = {}) {
   }
 }
 
-export function saveDocumentsNow() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.documents));
+export async function saveDocumentsNow() {
   if (elements.saveStatus) {
-    elements.saveStatus.textContent = "Saved";
-    elements.saveStatus.classList.remove("pending");
+    elements.saveStatus.textContent = "Saving...";
+    elements.saveStatus.classList.add("pending");
   }
+  const payload = {
+    documents: state.documents,
+    settings: {
+      theme: state.theme,
+      themeSource: state.themeSource,
+      sidebarCollapsed: state.sidebarCollapsed
+    }
+  };
+  state.savePromise = fetch("/api/state", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error("Failed to save app state");
+      }
+      await response.json();
+      if (elements.saveStatus) {
+        elements.saveStatus.textContent = "Saved";
+        elements.saveStatus.classList.remove("pending");
+      }
+    })
+    .catch((error) => {
+      console.error("Failed to save app state", error);
+      if (elements.saveStatus) {
+        elements.saveStatus.textContent = "Save failed";
+        elements.saveStatus.classList.remove("pending");
+      }
+    });
+  return state.savePromise;
 }
 
 export function queueSave() {
@@ -325,43 +359,66 @@ export function updateActiveDocument(patch) {
   queueSave();
 }
 
-export function loadDocumentsFromStorage() {
-  const savedTheme = localStorage.getItem(THEME_KEY);
-  if (savedTheme === "light" || savedTheme === "dark") {
-    state.themeSource = "user";
-    applyTheme(savedTheme);
-  } else {
-    state.themeSource = "system";
-    const systemTheme = getSystemTheme();
-    state.theme = systemTheme;
-    document.documentElement.classList.toggle("dark", systemTheme === "dark");
-    if (elements.markdownThemeStylesheet) {
-      elements.markdownThemeStylesheet.href = MARKDOWN_THEME_LINKS[systemTheme] || MARKDOWN_THEME_LINKS.light;
-    }
-    const nextLabel = systemTheme === "dark" ? "Light mode" : "Dark mode";
-    if (elements.themeToggleLabel) elements.themeToggleLabel.textContent = nextLabel;
-    if (elements.themeToggleButtonEditor) elements.themeToggleButtonEditor.textContent = nextLabel;
-    if (elements.themeToggleButtonSearch) elements.themeToggleButtonSearch.textContent = nextLabel;
-    if (elements.themeToggleButtonTags) elements.themeToggleButtonTags.textContent = nextLabel;
-    if (elements.themeToggleButtonRecent) elements.themeToggleButtonRecent.textContent = nextLabel;
+function applyInitialTheme(theme, themeSource = "system") {
+  state.theme = theme;
+  state.themeSource = themeSource;
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  if (elements.markdownThemeStylesheet) {
+    elements.markdownThemeStylesheet.href = MARKDOWN_THEME_LINKS[theme] || MARKDOWN_THEME_LINKS.light;
   }
-  applySidebarState(localStorage.getItem(SIDEBAR_KEY) === "collapsed");
+  const nextLabel = theme === "dark" ? "Light mode" : "Dark mode";
+  if (elements.themeToggleLabel) elements.themeToggleLabel.textContent = nextLabel;
+  if (elements.themeToggleButtonEditor) elements.themeToggleButtonEditor.textContent = nextLabel;
+  if (elements.themeToggleButtonSearch) elements.themeToggleButtonSearch.textContent = nextLabel;
+  if (elements.themeToggleButtonTags) elements.themeToggleButtonTags.textContent = nextLabel;
+  if (elements.themeToggleButtonRecent) elements.themeToggleButtonRecent.textContent = nextLabel;
+}
 
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return { hasData: false };
-
+export async function loadDocumentsFromStorage() {
   try {
-    state.documents = JSON.parse(raw).map((documentItem) => ({
-      ...documentItem,
-      tags: normalizeTags(documentItem.tags || [])
-    }));
+    const response = await fetch("/api/state", {
+      method: "GET",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to load app state");
+    }
+
+    const payload = await response.json();
+    const settings = payload.settings || {};
+    const resolvedThemeSource =
+      settings.themeSource === "user" || settings.themeSource === "system" ? settings.themeSource : "system";
+    const resolvedTheme =
+      resolvedThemeSource === "system"
+        ? getSystemTheme()
+        : settings.theme === "dark"
+          ? "dark"
+          : "light";
+
+    applyInitialTheme(resolvedTheme, resolvedThemeSource);
+    state.sidebarCollapsed = Boolean(settings.sidebarCollapsed);
+    if (elements.appShell) elements.appShell.classList.toggle("sidebar-collapsed", state.sidebarCollapsed);
+    if (elements.collapseIcon) elements.collapseIcon.textContent = state.sidebarCollapsed ? "»" : "«";
+
+    state.documents = Array.isArray(payload.documents)
+      ? payload.documents.map((documentItem) => ({
+          ...documentItem,
+          tags: normalizeTags(documentItem.tags || [])
+        }))
+      : [];
     sortDocuments();
     state.activeDocumentId = state.documents[0]?.id || null;
-    return { hasData: true };
+    state.hasLoadedFromDisk = true;
+    return { hasData: state.documents.length > 0 };
   } catch (error) {
     console.error("Failed to load saved documents", error);
+    applyInitialTheme(getSystemTheme(), "system");
     state.documents = [];
     state.activeDocumentId = null;
+    state.hasLoadedFromDisk = true;
     return { hasData: false };
   }
 }

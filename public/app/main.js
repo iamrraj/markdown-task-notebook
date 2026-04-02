@@ -114,7 +114,7 @@ async function insertImageFile(file) {
   }
 }
 
-function init() {
+async function init() {
   initElements();
 
   elements.newDocButton?.addEventListener("click", handleCreateDocument);
@@ -264,7 +264,7 @@ function init() {
     }
   });
 
-  const loaded = loadDocumentsFromStorage();
+  const loaded = await loadDocumentsFromStorage();
   if (!loaded.hasData) {
     createDocument("# Today\n\n- Capture tasks\n- Draft the plan\n- Review the rendered note\n");
   }

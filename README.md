@@ -140,9 +140,8 @@ The interface is primarily built with Tailwind classes in [index.html](/Users/ra
 
 ```text
 markdown-task-notebook/
-├── .github/
-│   └── workflows/
-│       └── deploy-pages.yml
+├── .data/
+│   └── app-state.json
 ├── .gitignore
 ├── LICENSE.md
 ├── README.md
@@ -163,16 +162,25 @@ markdown-task-notebook/
 
 This project is local-first.
 
-Notes are stored in browser `localStorage`, not in a cloud service and not in a backend database.
+Notes are stored on disk in an internal app data file, not in browser `localStorage`.
 
-Primary storage key:
+Primary local storage directory and file:
 
 ```text
-markdown-task-notebook.documents.v1
+markdown-task-notebook/.data/app-state.json
 ```
 
-Other local settings also use browser storage, such as:
+Full path on your machine right now:
 
+```text
+/Users/rahulraj/markdown-task-notebook/.data/app-state.json
+```
+
+That file stores:
+
+- documents
+- tags
+- timestamps
 - theme preference
 - sidebar collapse state
 
@@ -186,15 +194,24 @@ Other local settings also use browser storage, such as:
 ### What does not automatically leave your computer
 
 - note content
-- browser-stored note data
-- saved theme/sidebar state
+- the internal `.data/app-state.json` file stays on your computer
+- nothing in the note storage is automatically uploaded anywhere by this app
 
-### Important limitations of browser storage
+### Important notes about this storage model
 
-- clearing site data can remove notes
-- different browsers will have different note storage
-- different browser profiles will have different note storage
+- clearing browser site data does not remove the saved notes
+- different browsers will read the same saved notes through the local app server
 - GitHub publishing does not include your local notes automatically
+
+### Summary
+
+The notes are stored here on disk:
+
+```text
+/Users/rahulraj/markdown-task-notebook/.data/app-state.json
+```
+
+They are not stored in browser `localStorage` anymore.
 
 ## Running The App
 
@@ -249,25 +266,15 @@ git remote add origin https://github.com/YOUR_USER/markdown-task-notebook.git
 git push -u origin main
 ```
 
-## Public Deployment
+## GitHub Notes
 
-This repo includes a GitHub Pages workflow:
+This repository is prepared for code publishing, but there is no GitHub deployment workflow included now.
 
-- [.github/workflows/deploy-pages.yml](/Users/rahulraj/markdown-task-notebook/.github/workflows/deploy-pages.yml)
+That means:
 
-It deploys the static app from `public/`.
-
-### GitHub Pages notes
-
-- the deployed app is public if your repository/pages visibility is public
-- each visitor still stores notes only in their own browser
-- your personal local notes do not get uploaded automatically
-
-Expected public URL pattern:
-
-```text
-https://YOUR_GITHUB_USERNAME.github.io/markdown-task-notebook/
-```
+- you can publish the code to GitHub
+- your local note data file does not get published automatically
+- the app is intended to run locally on your machine
 
 ## Desktop Notes
 
@@ -346,6 +353,16 @@ notes logs
 ```
 
 Then reload the page.
+
+### Where are my notes saved?
+
+They are saved in:
+
+```text
+/Users/rahulraj/markdown-task-notebook/.data/app-state.json
+```
+
+If you want to inspect them directly, open that file.
 
 ## Roadmap Ideas
 
