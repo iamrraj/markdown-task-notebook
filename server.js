@@ -2,8 +2,8 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const PORT = 9090;
-const HOST = "127.0.0.1";
+const PORT = Number(process.env.PORT) || 9090;
+const HOST = process.env.HOST || "127.0.0.1";
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = path.join(__dirname, ".data");
 const STATE_FILE = path.join(DATA_DIR, "app-state.json");

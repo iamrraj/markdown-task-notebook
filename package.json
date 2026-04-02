@@ -1,10 +1,29 @@
 {
-  "name": "markdown-task-notebook",
+  "name": "markdown-notebook",
   "version": "1.0.0",
-  "private": true,
   "description": "Local-first markdown notebook with notes table, split editor and live preview",
   "license": "MIT",
+  "bin": {
+    "markdown-notebook": "./bin/markdown-task-notebook.js"
+  },
+  "files": [
+    "bin",
+    "public",
+    "server.js",
+    "README.md",
+    "LICENSE.md",
+    "SECURITY.md"
+  ],
+  "keywords": [
+    "markdown",
+    "notebook",
+    "notes",
+    "live-preview",
+    "local-first"
+  ],
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "cli": "node ./bin/markdown-task-notebook.js",
+    "pack:check": "npm pack --dry-run"
   }
 }

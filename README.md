@@ -1,6 +1,6 @@
-# Task Markdown Notebook
+# Markdown Notebook
 
-Task Markdown Notebook is a local-first notes application for writing markdown, organizing notes, and previewing formatted content in real time.
+Markdown Notebook is a local-first notes application for writing markdown, organizing notes, and previewing formatted content in real time.
 
 It is designed to feel like a desktop notebook workspace inside the browser:
 
@@ -28,7 +28,7 @@ http://127.0.0.1:9090
 
 ### Notebook Editor
 
-![Notebook editor view](./docs/images/notebook-view1.png)
+![Notebook editor view](./docs/images/notebook-view.png)
 
 ## About
 
@@ -287,6 +287,46 @@ The notes are stored here on disk:
 They are not stored in browser `localStorage` anymore.
 
 ## Running The App
+
+### Install as an npm package
+
+After publishing to npm, users can install and run it with:
+
+```bash
+npm install -g markdown-notebook
+markdown-notebook
+```
+
+You can also run it without global install:
+
+```bash
+npx markdown-notebook
+```
+
+Available CLI commands:
+
+```bash
+markdown-notebook
+markdown-notebook start
+markdown-notebook open
+markdown-notebook url
+markdown-notebook help
+```
+
+### Publish to npm
+
+If you are the package owner, publish with:
+
+```bash
+npm login
+npm publish
+```
+
+Before publishing, it is worth checking the package contents with:
+
+```bash
+npm pack --dry-run
+```
 
 ### Use the `notes` launcher
 
