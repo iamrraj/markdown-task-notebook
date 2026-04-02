@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime files
+.pid
+*.pid
+
+# Environment / local editor files
+.env
+.env.*
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# OS / tooling
+Thumbs.db
