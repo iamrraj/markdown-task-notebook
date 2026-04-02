@@ -293,14 +293,14 @@ They are not stored in browser `localStorage` anymore.
 After publishing to npm, users can install and run it with:
 
 ```bash
-npm install -g markdown-notebook
+npm install -g @iamrraj/markdown-notebook
 markdown-notebook
 ```
 
 You can also run it without global install:
 
 ```bash
-npx markdown-notebook
+npx @iamrraj/markdown-notebook
 ```
 
 Available CLI commands:
@@ -318,6 +318,7 @@ markdown-notebook help
 If you are the package owner, publish with:
 
 ```bash
+npm pkg fix
 npm login
 npm publish
 ```

@@ -1,8 +1,11 @@
 {
-  "name": "markdown-notebook",
+  "name": "@iamrraj/markdown-notebook",
   "version": "1.0.0",
   "description": "Local-first markdown notebook with notes table, split editor and live preview",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "markdown-notebook": "./bin/markdown-task-notebook.js"
   },
