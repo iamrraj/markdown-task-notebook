@@ -8,6 +8,7 @@ It is designed to feel like a desktop notebook workspace inside the browser:
 - collapsible sidebar
 - notes table view
 - split editor and preview screen
+- notebook-style writing workflow
 - light and dark theme
 - tags and filters
 - fast local autosave
@@ -17,6 +18,16 @@ The app runs locally at:
 ```text
 http://127.0.0.1:9090
 ```
+
+## Screenshots
+
+### Notes Table
+
+![Notes table view](./docs/images/list-view.png)
+
+### Notebook Editor
+
+![Notebook editor view](./docs/images/notebook-view.png)
 
 ## About
 
@@ -37,6 +48,7 @@ The main idea is simple:
 - Create unlimited notes
 - Edit title inline
 - Add tags with comma-separated values
+- Write in a dedicated notebook editor
 - Autosave while typing
 - Track created and updated timestamps
 - Delete notes
@@ -63,6 +75,17 @@ The main idea is simple:
 - live preview beside the editor
 - GitHub-style markdown appearance
 - light and dark markdown theme
+- markdown images render in preview
+- markdown lists and nested lists render properly
+
+### Images in notes
+
+- insert an image with the `Image` button
+- paste an image directly into the editor
+- drag and drop an image into the editor
+- images are inserted as markdown image syntax
+- images render directly inside the preview
+- pasted/uploaded images stay local because they are stored in the note content saved in the app state file
 
 Supported markdown includes:
 
@@ -73,6 +96,7 @@ Supported markdown includes:
 - nested lists
 - task checklists
 - tables
+- images
 - blockquotes
 - fenced code blocks
 - inline code
@@ -245,6 +269,23 @@ Then open:
 ```text
 http://127.0.0.1:9090
 ```
+
+## Notebook Editing Experience
+
+The notebook screen is the main writing workspace.
+
+It includes:
+
+- title editing in the top bar
+- tags in the top bar
+- save state indicator
+- copy action
+- delete action
+- theme toggle
+- left-side markdown editor
+- right-side live preview
+
+For smaller screens, the notebook view can switch between editor and preview.
 
 ## GitHub Repository Setup
 
