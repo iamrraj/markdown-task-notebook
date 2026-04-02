@@ -28,7 +28,7 @@ http://127.0.0.1:9090
 
 ### Notebook Editor
 
-![Notebook editor view](./docs/images/notebook-view.png)
+![Notebook editor view](./docs/images/notebook-view1.png)
 
 ## About
 
