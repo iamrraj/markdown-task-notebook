@@ -369,3 +369,7 @@ Then:
 2. Write markdown in the editor.
 3. Preview it live on the right.
 4. Use tags and filters to organize notes.
+
+## LICENCE
+
+MIT
