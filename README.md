@@ -9,6 +9,7 @@ It is designed to feel like a desktop notebook workspace inside the browser:
 - notes table view
 - split editor and preview screen
 - notebook-style writing workflow
+- side-by-side desktop editing view
 - light and dark theme
 - tags and filters
 - fast local autosave
@@ -47,12 +48,14 @@ The main idea is simple:
 
 - Create unlimited notes
 - Edit title inline
-- Add tags with comma-separated values
 - Write in a dedicated notebook editor
 - Autosave while typing
 - Track created and updated timestamps
 - Delete notes
+- Duplicate notes
+- Pin and archive notes
 - Browse recent notes from the sidebar
+- Use a compact dropdown menu for note actions
 
 ### Views
 
@@ -73,6 +76,7 @@ The main idea is simple:
 ### Markdown preview
 
 - live preview beside the editor
+- resizable side-by-side editor and preview on desktop
 - GitHub-style markdown appearance
 - light and dark markdown theme
 - markdown images render in preview
@@ -80,12 +84,12 @@ The main idea is simple:
 
 ### Images in notes
 
-- insert an image with the `Image` button
+- insert an image from the note dropdown
 - paste an image directly into the editor
 - drag and drop an image into the editor
 - images are inserted as markdown image syntax
 - images render directly inside the preview
-- pasted/uploaded images stay local because they are stored in the note content saved in the app state file
+- pasted/uploaded images stay local because they are stored as local files inside the app data directory
 
 Supported markdown includes:
 
@@ -110,7 +114,38 @@ Supported markdown includes:
 - desktop-style editing layout
 - inner-panel scrolling instead of whole-page scrolling
 - top action bar for editing
+- dropdown note actions with icon and text
 - theme toggle
+- sync scroll toggle for editor and preview
+
+### Note menu actions
+
+The notebook dropdown menu currently supports:
+
+- pin or unpin note
+- archive or restore note
+- duplicate note
+- copy markdown
+- export markdown
+- import markdown
+- insert image
+- toggle light or dark theme
+- delete note
+
+### Keyboard shortcuts
+
+- `Ctrl/Cmd + B` for bold
+- `Ctrl/Cmd + I` for italic
+- `Ctrl/Cmd + K` for link
+- `Ctrl/Cmd + E` for inline code
+- `Ctrl/Cmd + Shift + 1` for `#` heading
+- `Ctrl/Cmd + Shift + 2` for `##` heading
+- `Ctrl/Cmd + Shift + 7` for bullet list
+- `Ctrl/Cmd + Shift + 8` for numbered list
+- `Ctrl/Cmd + Shift + 9` for blockquote
+- `Ctrl/Cmd + Shift + U` for task list
+- `Ctrl/Cmd + Shift + M` for fenced code block
+- native `Ctrl/Cmd + Z` undo and `Shift + Ctrl/Cmd + Z` redo remain supported
 
 ## How It Works
 
@@ -123,6 +158,8 @@ This is a very small app with a minimal local runtime.
 - serves the `public/` directory
 - listens on `127.0.0.1:9090`
 - returns the web app locally
+- persists note state to disk
+- stores pasted and uploaded images as local assets
 
 ### Frontend
 
@@ -165,7 +202,8 @@ The interface is primarily built with Tailwind classes in [index.html](/Users/ra
 ```text
 markdown-task-notebook/
 ├── .data/
-│   └── app-state.json
+│   ├── app-state.json
+│   └── assets/
 ├── .gitignore
 ├── LICENSE.md
 ├── README.md
@@ -207,6 +245,15 @@ That file stores:
 - timestamps
 - theme preference
 - sidebar collapse state
+- split view size
+- sort preference
+- sync scroll preference
+
+Local image assets are stored here:
+
+```text
+markdown-task-notebook/.data/assets/
+```
 
 ### What stays on your computer
 
@@ -214,11 +261,13 @@ That file stores:
 - your tags
 - your timestamps
 - your local UI preferences
+- your pasted and uploaded image assets
 
 ### What does not automatically leave your computer
 
 - note content
 - the internal `.data/app-state.json` file stays on your computer
+- the internal `.data/assets/` directory stays on your computer
 - nothing in the note storage is automatically uploaded anywhere by this app
 
 ### Important notes about this storage model

@@ -22,9 +22,13 @@ If no private reporting channel has been set up yet, establish one before publis
 
 - The app is local-first and stores notes in an internal on-disk file:
   - `/Users/rahulraj/markdown-task-notebook/.data/app-state.json`
+- Uploaded and pasted images are stored as local files in:
+  - `/Users/rahulraj/markdown-task-notebook/.data/assets/`
 - Markdown preview rendering uses `marked`.
 - Rendered output is sanitized with `DOMPurify`.
 - There is no backend database or account system in the current project.
+- The local server is intended to run on `127.0.0.1:9090`.
+- This project currently uses CDN-hosted frontend dependencies in the browser.
 
 ## Scope
 
@@ -33,4 +37,6 @@ Security review is especially relevant for:
 - markdown rendering
 - HTML sanitization
 - local file persistence handling
+- local asset file handling
+- drag and drop or pasted file input flows
 - third-party CDN dependencies

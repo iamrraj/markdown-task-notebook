@@ -14,7 +14,7 @@ import {
 import { renderMarkdownSync, unmountMarkdown } from "./markdownRenderer.js";
 
 export function renderRecentList(onOpenDocument) {
-  const recentDocuments = state.documents.slice(0, 8);
+  const recentDocuments = state.documents.filter((doc) => !doc.archived).slice(0, 8);
   if (!elements.recentDocumentsList) return;
   elements.recentDocumentsList.innerHTML = "";
 
@@ -67,6 +67,8 @@ function renderDocumentCards(target, documents, onOpenDocument) {
         </div>
       </div>
       <div class="mt-3 flex flex-wrap gap-2">
+        ${documentItem.pinned ? '<span class="status-chip status-chip-pinned">Pinned</span>' : ""}
+        ${documentItem.archived ? '<span class="status-chip status-chip-archived">Archived</span>' : ""}
         ${
           normalizeTags(documentItem.tags)
             .slice(0, 5)
@@ -103,6 +105,7 @@ export function renderSearchPage(onOpenDocument) {
   const query = (elements.searchPageInput?.value || "").trim().toLowerCase();
 
   const documents = state.documents.filter((doc) => {
+    if (doc.archived && !state.filters.showArchived) return false;
     if (!query) return true;
     const title = deriveTitle(doc.title, doc.content).toLowerCase();
     const content = doc.content.toLowerCase();
@@ -154,7 +157,7 @@ export function renderTagsPage(onOpenDocument) {
     ? state.documents.filter((doc) =>
         normalizeTags(doc.tags).some((tag) => tag === active),
       )
-    : state.documents;
+    : state.documents.filter((doc) => !doc.archived || state.filters.showArchived);
 
   if (elements.tagsResultsHeading) {
     elements.tagsResultsHeading.textContent = active
@@ -169,7 +172,7 @@ export function renderTagsPage(onOpenDocument) {
 }
 
 export function renderRecentPage(onOpenDocument) {
-  const recent = state.documents.slice(0, 18);
+  const recent = state.documents.filter((doc) => !doc.archived || state.filters.showArchived).slice(0, 18);
   if (elements.recentResultCount) {
     elements.recentResultCount.textContent = `${recent.length} note${recent.length === 1 ? "" : "s"}`;
   }
@@ -207,12 +210,8 @@ export function renderTable(onOpenDocument, onDeleteDocument) {
       </td>
       <td class="px-5 py-4 align-top">
         <div class="flex flex-wrap gap-2">
-          ${
-            normalizeTags(documentItem.tags)
-              .map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`)
-              .join("") ||
-            '<span class="text-sm text-slate-400 dark:text-slate-500">No tags</span>'
-          }
+          ${documentItem.pinned ? '<span class="status-chip status-chip-pinned">Pinned</span>' : ""}
+          ${documentItem.archived ? '<span class="status-chip status-chip-archived">Archived</span>' : '<span class="status-chip">Active</span>'}
         </div>
       </td>
       <td class="px-5 py-4 align-top text-sm text-slate-600 dark:text-slate-400">${escapeHtml(formatDate(documentItem.updatedAt))}</td>
@@ -294,6 +293,14 @@ export function renderEditor() {
       activeDocument.title,
       activeDocument.content,
     );
+  }
+  if (elements.pinDocButton) {
+    elements.pinDocButton.classList.toggle("is-active", Boolean(activeDocument.pinned));
+    elements.pinDocButton.textContent = activeDocument.pinned ? "Unpin note" : "Pin note";
+  }
+  if (elements.archiveDocButton) {
+    elements.archiveDocButton.classList.toggle("is-active", Boolean(activeDocument.archived));
+    elements.archiveDocButton.textContent = activeDocument.archived ? "Restore note" : "Archive note";
   }
   renderMeta(activeDocument);
   renderMarkdown(activeDocument.content);

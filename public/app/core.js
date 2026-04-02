@@ -1,6 +1,7 @@
 export const STORAGE_KEY = "markdown-task-notebook.documents.v1";
 export const THEME_KEY = "markdown-task-notebook.theme.v1";
 export const SIDEBAR_KEY = "markdown-task-notebook.sidebar.v1";
+export const SYNC_SCROLL_KEY = "markdown-task-notebook.sync-scroll.v1";
 
 export const MARKDOWN_THEME_LINKS = {
   light: "https://cdn.jsdelivr.net/npm/github-markdown-css@5.8.1/github-markdown-light.min.css",
@@ -17,11 +18,15 @@ export const state = {
   theme: "light",
   themeSource: "system",
   sidebarCollapsed: false,
+  syncScroll: false,
+  splitRatio: 0.52,
+  sortBy: "updated",
   hasLoadedFromDisk: false,
   filters: {
     search: "",
     date: "all",
-    tag: ""
+    tag: "",
+    showArchived: false
   },
   tagsPage: {
     activeTag: ""
@@ -45,11 +50,14 @@ export function initElements() {
     collapseIcon: document.getElementById("collapseIcon"),
     newDocButton: document.getElementById("newDocButton"),
     newDocTableButton: document.getElementById("newDocTableButton"),
+    uploadDocButton: document.getElementById("uploadDocButton"),
     backToListButton: document.getElementById("backToListButton"),
     deleteDocButton: document.getElementById("deleteDocButton"),
     copyMarkdownButton: document.getElementById("copyMarkdownButton"),
+    importMarkdownButton: document.getElementById("importMarkdownButton"),
     insertImageButton: document.getElementById("insertImageButton"),
     imageFileInput: document.getElementById("imageFileInput"),
+    markdownFileInput: document.getElementById("markdownFileInput"),
     themeToggleButton: document.getElementById("themeToggleButton"),
     themeToggleButtonEditor: document.getElementById("themeToggleButtonEditor"),
     themeToggleButtonSearch: document.getElementById("themeToggleButtonSearch"),
@@ -81,6 +89,17 @@ export function initElements() {
     tagChipList: document.getElementById("tagChipList"),
     markdownInput: document.getElementById("markdownInput"),
     previewOutput: document.getElementById("previewOutput"),
+    syncScrollCheckbox: document.getElementById("syncScrollCheckbox"),
+    showArchivedCheckbox: document.getElementById("showArchivedCheckbox"),
+    sortSelect: document.getElementById("sortSelect"),
+    exportMarkdownButton: document.getElementById("exportMarkdownButton"),
+    duplicateDocButton: document.getElementById("duplicateDocButton"),
+    pinDocButton: document.getElementById("pinDocButton"),
+    archiveDocButton: document.getElementById("archiveDocButton"),
+    noteMenuButton: document.getElementById("noteMenuButton"),
+    noteMenu: document.getElementById("noteMenu"),
+    splitPane: document.getElementById("splitPane"),
+    splitResizer: document.getElementById("splitResizer"),
     previewHeading: document.getElementById("previewHeading"),
     saveStatus: document.getElementById("saveStatus"),
     documentMeta: document.getElementById("documentMeta"),
@@ -139,8 +158,31 @@ export function getExcerpt(content) {
   return flattened ? flattened.slice(0, 90) : "Empty note";
 }
 
+export function slugify(value) {
+  const clean = String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return clean || "untitled-note";
+}
+
 export function sortDocuments() {
-  state.documents.sort((left, right) => new Date(right.updatedAt) - new Date(left.updatedAt));
+  state.documents.sort((left, right) => {
+    if (Boolean(left.archived) !== Boolean(right.archived)) {
+      return Number(left.archived) - Number(right.archived);
+    }
+    if (Boolean(left.pinned) !== Boolean(right.pinned)) {
+      return Number(right.pinned) - Number(left.pinned);
+    }
+
+    if (state.sortBy === "title") {
+      return deriveTitle(left.title, left.content).localeCompare(deriveTitle(right.title, right.content));
+    }
+    if (state.sortBy === "created") {
+      return new Date(right.createdAt) - new Date(left.createdAt);
+    }
+    return new Date(right.updatedAt) - new Date(left.updatedAt);
+  });
 }
 
 export function getActiveDocument() {
@@ -156,7 +198,9 @@ export function applyTheme(theme) {
   }
   const nextLabel = theme === "dark" ? "Light mode" : "Dark mode";
   if (elements.themeToggleLabel) elements.themeToggleLabel.textContent = nextLabel;
-  if (elements.themeToggleButtonEditor) elements.themeToggleButtonEditor.textContent = nextLabel;
+  if (elements.themeToggleButtonEditor) {
+    elements.themeToggleButtonEditor.textContent = nextLabel;
+  }
   if (elements.themeToggleButtonSearch) elements.themeToggleButtonSearch.textContent = nextLabel;
   if (elements.themeToggleButtonTags) elements.themeToggleButtonTags.textContent = nextLabel;
   if (elements.themeToggleButtonRecent) elements.themeToggleButtonRecent.textContent = nextLabel;
@@ -175,6 +219,14 @@ export function applySidebarState(collapsed) {
   state.sidebarCollapsed = collapsed;
   if (elements.appShell) elements.appShell.classList.toggle("sidebar-collapsed", collapsed);
   if (elements.collapseIcon) elements.collapseIcon.textContent = collapsed ? "»" : "«";
+  if (state.hasLoadedFromDisk) queueSave();
+}
+
+export function applySyncScrollState(enabled) {
+  state.syncScroll = Boolean(enabled);
+  if (elements.syncScrollCheckbox) {
+    elements.syncScrollCheckbox.checked = state.syncScroll;
+  }
   if (state.hasLoadedFromDisk) queueSave();
 }
 
@@ -235,12 +287,15 @@ export async function saveDocumentsNow() {
     elements.saveStatus.classList.add("pending");
   }
   const payload = {
-    documents: state.documents,
-    settings: {
-      theme: state.theme,
-      themeSource: state.themeSource,
-      sidebarCollapsed: state.sidebarCollapsed
-    }
+      documents: state.documents,
+      settings: {
+        theme: state.theme,
+        themeSource: state.themeSource,
+        sidebarCollapsed: state.sidebarCollapsed,
+        syncScroll: state.syncScroll,
+        splitRatio: state.splitRatio,
+        sortBy: state.sortBy
+      }
   };
   state.savePromise = fetch("/api/state", {
     method: "PUT",
@@ -279,6 +334,7 @@ export function queueSave() {
 }
 
 export function matchesDateFilter(documentItem) {
+  if (documentItem.archived && !state.filters.showArchived) return false;
   if (state.filters.date === "all") return true;
   const updatedAt = new Date(documentItem.updatedAt).getTime();
   const now = Date.now();
@@ -310,6 +366,8 @@ export function createDocumentModel(initialContent = "") {
     title: "",
     content: initialContent,
     tags: [],
+    pinned: false,
+    archived: false,
     createdAt: now,
     updatedAt: now
   };
@@ -347,6 +405,64 @@ export function deleteDocument(id) {
   return { deleted: true };
 }
 
+export function duplicateDocument(id) {
+  const current = state.documents.find((item) => item.id === id);
+  if (!current) return null;
+  const duplicate = createDocumentModel(current.content);
+  duplicate.title = `${deriveTitle(current.title, current.content)} Copy`;
+  duplicate.tags = [...normalizeTags(current.tags)];
+  duplicate.pinned = false;
+  duplicate.archived = false;
+  state.documents.unshift(duplicate);
+  state.activeDocumentId = duplicate.id;
+  sortDocuments();
+  queueSave();
+  return duplicate.id;
+}
+
+export function togglePinDocument(id) {
+  const current = state.documents.find((item) => item.id === id);
+  if (!current) return false;
+  current.pinned = !current.pinned;
+  current.updatedAt = new Date().toISOString();
+  sortDocuments();
+  queueSave();
+  return current.pinned;
+}
+
+export function toggleArchiveDocument(id) {
+  const current = state.documents.find((item) => item.id === id);
+  if (!current) return false;
+  current.archived = !current.archived;
+  current.updatedAt = new Date().toISOString();
+  sortDocuments();
+  queueSave();
+  return current.archived;
+}
+
+export function setSortBy(sortBy) {
+  state.sortBy = ["updated", "created", "title"].includes(sortBy) ? sortBy : "updated";
+  sortDocuments();
+  if (elements.sortSelect) elements.sortSelect.value = state.sortBy;
+  if (state.hasLoadedFromDisk) queueSave();
+}
+
+export function setShowArchived(enabled) {
+  state.filters.showArchived = Boolean(enabled);
+  if (elements.showArchivedCheckbox) {
+    elements.showArchivedCheckbox.checked = state.filters.showArchived;
+  }
+}
+
+export function setSplitRatio(ratio) {
+  const clamped = Math.min(0.7, Math.max(0.3, Number(ratio) || 0.52));
+  state.splitRatio = clamped;
+  if (elements.splitPane) {
+    elements.splitPane.style.setProperty("--split-ratio", String(clamped));
+  }
+  if (state.hasLoadedFromDisk) queueSave();
+}
+
 export function updateActiveDocument(patch) {
   const activeDocument = getActiveDocument();
   if (!activeDocument) return;
@@ -368,7 +484,9 @@ function applyInitialTheme(theme, themeSource = "system") {
   }
   const nextLabel = theme === "dark" ? "Light mode" : "Dark mode";
   if (elements.themeToggleLabel) elements.themeToggleLabel.textContent = nextLabel;
-  if (elements.themeToggleButtonEditor) elements.themeToggleButtonEditor.textContent = nextLabel;
+  if (elements.themeToggleButtonEditor) {
+    elements.themeToggleButtonEditor.textContent = nextLabel;
+  }
   if (elements.themeToggleButtonSearch) elements.themeToggleButtonSearch.textContent = nextLabel;
   if (elements.themeToggleButtonTags) elements.themeToggleButtonTags.textContent = nextLabel;
   if (elements.themeToggleButtonRecent) elements.themeToggleButtonRecent.textContent = nextLabel;
@@ -402,11 +520,21 @@ export async function loadDocumentsFromStorage() {
     state.sidebarCollapsed = Boolean(settings.sidebarCollapsed);
     if (elements.appShell) elements.appShell.classList.toggle("sidebar-collapsed", state.sidebarCollapsed);
     if (elements.collapseIcon) elements.collapseIcon.textContent = state.sidebarCollapsed ? "»" : "«";
+    state.syncScroll = Boolean(settings.syncScroll);
+    if (elements.syncScrollCheckbox) elements.syncScrollCheckbox.checked = state.syncScroll;
+    state.sortBy = ["updated", "created", "title"].includes(settings.sortBy) ? settings.sortBy : "updated";
+    if (elements.sortSelect) elements.sortSelect.value = state.sortBy;
+    state.splitRatio = Number(settings.splitRatio) || 0.52;
+    if (elements.splitPane) {
+      elements.splitPane.style.setProperty("--split-ratio", String(Math.min(0.7, Math.max(0.3, state.splitRatio))));
+    }
 
     state.documents = Array.isArray(payload.documents)
       ? payload.documents.map((documentItem) => ({
           ...documentItem,
-          tags: normalizeTags(documentItem.tags || [])
+          tags: normalizeTags(documentItem.tags || []),
+          pinned: Boolean(documentItem.pinned),
+          archived: Boolean(documentItem.archived)
         }))
       : [];
     sortDocuments();

@@ -127,7 +127,8 @@
                   All Notes
                 </h1>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Local-first markdown notebook with autosave, tags, fast filtering, and a focused live preview workspace.
+                  Local-first markdown notebook with autosave, tags, fast
+                  filtering, and a focused live preview workspace.
                 </p>
               </div>
               <div class="flex items-center gap-2">
@@ -155,7 +156,7 @@
               class="mt-4 rounded-[24px] border border-slate-200 bg-white/90 p-4 md:p-5 dark:border-slate-800 dark:bg-slate-950"
             >
               <div
-                class="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_190px_minmax(0,0.9fr)_auto]"
+                class="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_190px_minmax(0,0.9fr)_190px_auto]"
               >
                 <input
                   id="searchInput"
@@ -178,6 +179,14 @@
                   placeholder="Filter by tag"
                   class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-amber-300 focus:bg-white focus:ring-4 focus:ring-amber-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:bg-slate-900"
                 />
+                <select
+                  id="sortSelect"
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-amber-300 focus:bg-white focus:ring-4 focus:ring-amber-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:bg-slate-900"
+                >
+                  <option value="updated">Sort by updated</option>
+                  <option value="created">Sort by created</option>
+                  <option value="title">Sort by title</option>
+                </select>
                 <button
                   id="clearFiltersButton"
                   type="button"
@@ -186,6 +195,16 @@
                   Reset
                 </button>
               </div>
+              <label
+                class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300"
+              >
+                <input
+                  id="showArchivedCheckbox"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:ring-slate-700"
+                />
+                <span>Show archived notes</span>
+              </label>
             </section>
 
             <section
@@ -204,13 +223,22 @@
                     Open any row to switch into the split markdown workspace.
                   </p>
                 </div>
-                <button
-                  id="newDocTableButton"
-                  type="button"
-                  class="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-                >
-                  New note
-                </button>
+                <div class="flex gap-x-1 items-center">
+                  <button
+                    id="newDocTableButton"
+                    type="button"
+                    class="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  >
+                    New note
+                  </button>
+                  <button
+                    id="uploadDocButton"
+                    type="button"
+                    class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    Upload markdown
+                  </button>
+                </div>
               </div>
 
               <div class="custom-scroll flex-1 overflow-auto">
@@ -220,7 +248,8 @@
                       class="border-b border-slate-200 text-left text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500"
                     >
                       <th class="px-5 py-4">Title</th>
-                      <th class="px-5 py-4">Tags</th>
+
+                      <th class="px-5 py-4">Status</th>
                       <th class="px-5 py-4">Last Updated</th>
                       <th class="px-5 py-4">Created</th>
                       <th class="px-5 py-4 text-right">Action</th>
@@ -466,22 +495,17 @@
               </div>
 
               <div
-                class="min-w-0 flex-1 items-center gap-2 text-sm font-semibold text-slate-400 dark:text-slate-500 lg:flex"
+                class="min-w-0 flex-1 items-center gap-3 text-sm font-semibold text-slate-400 dark:text-slate-500 lg:flex"
               >
-                <input
-                  id="titleInput"
-                  type="text"
-                  maxlength="120"
-                  placeholder="Untitled note"
-                  class="w-full bg-transparent text-xl font-extrabold tracking-tight text-slate-900 outline-none placeholder:text-slate-300 dark:text-slate-100 dark:placeholder:text-slate-600"
-                />
-                <!-- <input
-                  id="tagsInput"
-                  type="text"
-                  placeholder="tags: project, ops, weekly"
-                  class="mt-2 w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-amber-300 focus:bg-white focus:ring-4 focus:ring-amber-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:bg-slate-900"
-                /> -->
-                <div id="tagChipList" class="mt-2 flex flex-wrap gap-2"></div>
+                <div class="min-w-0 flex-1">
+                  <input
+                    id="titleInput"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Untitled note"
+                    class="w-full bg-transparent text-xl font-extrabold tracking-tight text-slate-900 outline-none placeholder:text-slate-300 dark:text-slate-100 dark:placeholder:text-slate-600"
+                  />
+                </div>
               </div>
 
               <div
@@ -497,45 +521,342 @@
                 Saved
               </span>
 
-              <button
-                id="copyMarkdownButton"
-                type="button"
-                class="rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900"
+              <label
+                for="syncScrollCheckbox"
+                class="tooltip-trigger inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                data-tooltip="Sync editor and preview scroll positions"
               >
-                Copy
-              </button>
-              <button
-                id="insertImageButton"
-                type="button"
-                class="rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900"
-              >
-                Image
-              </button>
-              <button
-                id="deleteDocButton"
-                type="button"
-                class="rounded-2xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
-              >
-                Delete
-              </button>
-              <button
-                id="themeToggleButtonEditor"
-                type="button"
-                class="rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900"
-              >
-                Theme
-              </button>
+                <input
+                  id="syncScrollCheckbox"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:ring-slate-700"
+                />
+                <span>Sync scroll</span>
+              </label>
+
+              <div class="relative">
+                <button
+                  id="noteMenuButton"
+                  type="button"
+                  aria-label="Open note menu"
+                  aria-expanded="false"
+                  class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <span>Menu</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" class="h-4 w-4">
+                    <path
+                      d="m7.5 10.5 4.5 4.5 4.5-4.5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                <div id="noteMenu" class="note-menu hidden">
+                  <button
+                    id="pinDocButton"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <path
+                          d="m12 3 2.8 5.1 5.7.8-4.1 4 1 5.6-5.4-2.7-5.4 2.7 1-5.6-4.1-4 5.7-.8Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      <span>Pin note</span>
+                    </span>
+                  </button>
+                  <button
+                    id="archiveDocButton"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <path
+                          d="M4.5 7.5h15v10.125A2.625 2.625 0 0 1 16.875 20.25H7.125A2.625 2.625 0 0 1 4.5 17.625Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                        <path
+                          d="M3.75 4.5h16.5v3h-16.5Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                        <path
+                          d="M9.75 12h4.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <span>Archive note</span>
+                    </span>
+                  </button>
+                  <button
+                    id="duplicateDocButton"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <rect
+                          x="8.25"
+                          y="8.25"
+                          width="11.25"
+                          height="11.25"
+                          rx="2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                        <path
+                          d="M15 8.25V6.75A2.25 2.25 0 0 0 12.75 4.5H6.75A2.25 2.25 0 0 0 4.5 6.75v6A2.25 2.25 0 0 0 6.75 15H8.25"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                      <span>Duplicate note</span>
+                    </span>
+                  </button>
+                  <button
+                    id="copyMarkdownButton"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <path
+                          d="M9 9.75A2.25 2.25 0 0 1 11.25 7.5h7.5A2.25 2.25 0 0 1 21 9.75v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5A2.25 2.25 0 0 1 9 17.25v-7.5Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                        <path
+                          d="M15 7.5V6.75A2.25 2.25 0 0 0 12.75 4.5h-7.5A2.25 2.25 0 0 0 3 6.75v7.5a2.25 2.25 0 0 0 2.25 2.25H6"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                      <span>Copy markdown</span>
+                    </span>
+                  </button>
+                  <button
+                    id="exportMarkdownButton"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <path
+                          d="M12 14.25V4.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="m8.25 10.5 3.75 3.75 3.75-3.75"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M4.5 18.75h15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <span>Export markdown</span>
+                    </span>
+                  </button>
+                  <button
+                    id="importMarkdownButton"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <path
+                          d="M12 3v10.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="m8.25 9.75 3.75 3.75 3.75-3.75"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M4.5 15.75v1.5A2.25 2.25 0 0 0 6.75 19.5h10.5a2.25 2.25 0 0 0 2.25-2.25v-1.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <span>Import markdown</span>
+                    </span>
+                  </button>
+                  <button
+                    id="insertImageButton"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <rect
+                          x="3.75"
+                          y="5.25"
+                          width="16.5"
+                          height="13.5"
+                          rx="2.25"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                        <circle cx="9" cy="10" r="1.4" fill="currentColor" />
+                        <path
+                          d="m6 16 4.5-4.5 2.25 2.25 1.5-1.5L18 16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      <span>Insert image</span>
+                    </span>
+                  </button>
+                  <button
+                    id="themeToggleButtonEditor"
+                    type="button"
+                    class="note-menu-item"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <path
+                          d="M21 12.8A8.999 8.999 0 1 1 11.2 3a7.2 7.2 0 1 0 9.8 9.8Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      <span>Toggle theme</span>
+                    </span>
+                  </button>
+                  <button
+                    id="deleteDocButton"
+                    type="button"
+                    class="note-menu-item note-menu-item-danger"
+                  >
+                    <span class="note-menu-item-copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="h-4 w-4"
+                      >
+                        <path
+                          d="M4.5 7.5h15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M9.75 3.75h4.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M7.5 7.5v10.125A2.625 2.625 0 0 0 10.125 20.25h3.75A2.625 2.625 0 0 0 16.5 17.625V7.5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <span>Delete note</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
             </header>
 
             <div
-              class="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]"
+              id="splitPane"
+              class="split-pane min-h-0 flex-1 overflow-hidden"
             >
               <section
                 id="editorPane"
                 class="flex min-h-0 flex-col overflow-hidden rounded-[10px] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
               >
-                <div class="border-b border-slate-200 px-5 py-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                  Paste image, drop image, or use the <span class="font-semibold text-slate-700 dark:text-slate-200">Image</span> button to insert markdown images.
+                <div
+                  class="border-b border-slate-200 px-5 py-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400"
+                >
+                  Paste image, drop image, or use the
+                  <span class="font-semibold text-slate-700 dark:text-slate-200"
+                    >Image</span
+                  >
+                  button to insert markdown images.
                 </div>
                 <textarea
                   id="markdownInput"
@@ -543,8 +864,27 @@
                   placeholder="# Plan the work&#10;&#10;- Draft the tasks&#10;- Add tags&#10;- Review the rendered note&#10;"
                   class="custom-scroll min-h-0 flex-1 resize-none bg-white px-5 py-5 font-mono text-[15px] leading-7 text-slate-900 outline-none dark:bg-slate-950 dark:text-slate-100"
                 ></textarea>
-                <input id="imageFileInput" type="file" accept="image/*" class="hidden" />
+                <input
+                  id="imageFileInput"
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                />
+                <input
+                  id="markdownFileInput"
+                  type="file"
+                  accept=".md,.markdown,.txt,text/markdown,text/plain"
+                  class="hidden"
+                />
               </section>
+
+              <div
+                id="splitResizer"
+                class="split-resizer hidden xl:flex"
+                role="separator"
+                aria-label="Resize editor and preview"
+                aria-orientation="vertical"
+              ></div>
 
               <section
                 id="previewPane"
