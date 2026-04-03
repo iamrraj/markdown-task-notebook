@@ -24,7 +24,8 @@ import {
   updateActiveDocument,
   parseTags,
   loadDocumentsFromStorage,
-  getSystemTheme
+  getSystemTheme,
+  getWordStats
 } from "./core.js";
 
 import { renderAll, renderSearchPage, renderTagsPage } from "./views.js";
@@ -165,6 +166,30 @@ function toggleNoteMenu() {
   const shouldOpen = elements.noteMenu.classList.contains("hidden");
   elements.noteMenu.classList.toggle("hidden", !shouldOpen);
   elements.noteMenuButton.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+}
+
+function toggleFocusMode() {
+  state.focusMode = !state.focusMode;
+  document.body.classList.toggle("focus-mode", state.focusMode);
+  if (elements.focusModeButton) {
+    elements.focusModeButton.classList.toggle("is-active", state.focusMode);
+  }
+  if (elements.exitFocusButton) {
+    elements.exitFocusButton.classList.toggle("hidden", !state.focusMode);
+    elements.exitFocusButton.classList.toggle("inline-flex", state.focusMode);
+  }
+  if (state.focusMode) {
+    switchView("notebook");
+    renderAll(handleOpenDocument, handleDeleteDocument);
+    elements.markdownInput?.focus();
+  }
+}
+
+function toggleShortcutsOverlay() {
+  if (!elements.shortcutsOverlay) return;
+  const isHidden = elements.shortcutsOverlay.classList.contains("hidden");
+  elements.shortcutsOverlay.classList.toggle("hidden", !isHidden);
+  elements.shortcutsOverlay.classList.toggle("flex", isHidden);
 }
 
 function initSplitResizer() {
@@ -639,6 +664,14 @@ async function init() {
   bindNav(elements.navTags);
   bindNav(elements.navRecent);
 
+  elements.focusModeButton?.addEventListener("click", toggleFocusMode);
+  elements.exitFocusButton?.addEventListener("click", toggleFocusMode);
+  elements.shortcutsHelpButton?.addEventListener("click", toggleShortcutsOverlay);
+  elements.closeShortcutsButton?.addEventListener("click", toggleShortcutsOverlay);
+  elements.shortcutsOverlay?.addEventListener("click", (event) => {
+    if (event.target === elements.shortcutsOverlay) toggleShortcutsOverlay();
+  });
+
   elements.showEditorButton?.addEventListener("click", () => setNotebookPane("editor"));
   elements.showPreviewButton?.addEventListener("click", () => setNotebookPane("preview"));
   elements.noteMenuButton?.addEventListener("click", (event) => {
@@ -684,9 +717,35 @@ async function init() {
   elements.tagsPageFilterInput?.addEventListener("input", () => renderTagsPage(handleOpenDocument));
 
   window.addEventListener("keydown", (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "n") {
+    const isModifier = event.metaKey || event.ctrlKey;
+
+    if (isModifier && event.key.toLowerCase() === "n") {
       event.preventDefault();
       handleCreateDocument();
+      return;
+    }
+
+    if (isModifier && event.shiftKey && event.key.toLowerCase() === "f") {
+      event.preventDefault();
+      toggleFocusMode();
+      return;
+    }
+
+    if (isModifier && event.key === "/") {
+      event.preventDefault();
+      toggleShortcutsOverlay();
+      return;
+    }
+
+    if (event.key === "Escape") {
+      if (elements.shortcutsOverlay && !elements.shortcutsOverlay.classList.contains("hidden")) {
+        toggleShortcutsOverlay();
+        return;
+      }
+      if (state.focusMode) {
+        toggleFocusMode();
+        return;
+      }
     }
   });
 

@@ -1,9 +1,11 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const PORT = Number(process.env.PORT) || 9090;
 const HOST = process.env.HOST || "127.0.0.1";
+const AUTH_TOKEN = process.env.AUTH_TOKEN;
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = path.join(__dirname, ".data");
 const STATE_FILE = path.join(DATA_DIR, "app-state.json");
@@ -139,6 +141,33 @@ http
   .createServer(async (req, res) => {
     const requestUrl = new URL(req.url, `http://${req.headers.host || "127.0.0.1"}`);
 
+    if (AUTH_TOKEN) {
+      const authHeader = req.headers.authorization;
+      const urlToken = requestUrl.searchParams.get("token");
+      
+      const hasValidToken = (authHeader === `Bearer ${AUTH_TOKEN}`) || (urlToken === AUTH_TOKEN);
+
+      if (!hasValidToken) {
+        if (req.url.startsWith("/api/")) {
+           sendJson(res, 401, { error: "Unauthorized" });
+           return;
+        } else {
+           // For browser loads, try basic auth as fallback
+           const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+           const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+           
+           if (!login || password !== AUTH_TOKEN) {
+               res.writeHead(401, { 
+                 "WWW-Authenticate": 'Basic realm="Markdown Notebook"',
+                 "Content-Type": "text/plain; charset=utf-8" 
+               });
+               res.end("Unauthorized");
+               return;
+           }
+        }
+      }
+    }
+
     if (requestUrl.pathname === "/api/state") {
       try {
         if (req.method === "GET") {
@@ -180,7 +209,7 @@ http
 
         const extension = path.extname(fileName).toLowerCase() || extensionFromMimeType(mimeType) || ".png";
         const baseName = sanitizeBaseName(fileName);
-        const assetName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${baseName}${extension}`;
+        const assetName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${baseName}${extension}`;
         const assetPath = path.join(ASSETS_DIR, assetName);
         const base64Data = dataUrl.split(",")[1] || "";
         const buffer = Buffer.from(base64Data, "base64");

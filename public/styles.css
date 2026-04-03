@@ -174,6 +174,26 @@
   display: none;
 }
 
+.recent-initial {
+  display: none;
+}
+
+.app-shell.sidebar-collapsed .recent-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+  border-radius: 10px;
+  background: var(--ui-sidebar-pill);
+  color: var(--ui-sidebar-item);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
 .recent-title {
   margin: 0;
   font-size: 0.95rem;
@@ -758,6 +778,115 @@
 .dark .prose-surface th,
 .dark .prose-surface td {
   border-color: #1e293b;
+}
+
+#focusModeButton.is-active {
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.dark #focusModeButton.is-active {
+  border-color: rgba(96, 165, 250, 0.45);
+  background: rgba(37, 99, 235, 0.2);
+  color: #bfdbfe;
+}
+
+/* Focus mode — true full-screen writing */
+.focus-mode {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999;
+  background: white;
+}
+
+.dark .focus-mode {
+  background: #020617;
+}
+
+.focus-mode > div {
+  height: 100% !important;
+}
+
+.focus-mode #appShell {
+  display: block !important;
+  grid-template-columns: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.focus-mode #sidebar,
+.focus-mode #dashboardView,
+.focus-mode #searchView,
+.focus-mode #tagsView,
+.focus-mode #recentView {
+  display: none !important;
+}
+
+.focus-mode main {
+  height: 100% !important;
+  background: transparent !important;
+}
+
+.focus-mode #editorView {
+  display: flex !important;
+  height: 100% !important;
+  padding: 0 !important;
+}
+
+.focus-mode #editorView > header {
+  display: none !important;
+}
+
+.focus-mode #splitPane {
+  display: block !important;
+  height: 100% !important;
+}
+
+.focus-mode #splitResizer,
+.focus-mode #previewPane {
+  display: none !important;
+}
+
+.focus-mode #editorPane {
+  display: flex !important;
+  height: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.focus-mode #editorPane > .border-b {
+  display: none !important;
+}
+
+.focus-mode #markdownInput {
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 4rem 2rem 6rem;
+  font-size: 1.1rem;
+  line-height: 2;
+  background: transparent !important;
+}
+
+#exitFocusButton {
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+.focus-mode #exitFocusButton {
+  pointer-events: auto;
+  opacity: 0.15;
+  z-index: 10000;
+}
+
+.focus-mode #exitFocusButton:hover {
+  opacity: 1;
 }
 
 .line-clamp-2 {

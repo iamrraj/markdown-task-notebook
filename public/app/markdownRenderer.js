@@ -25,10 +25,8 @@ export function renderMarkdownSync(targetEl, markdown) {
 }
 
 function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  if (value == null) return "";
+  const el = document.createElement("div");
+  el.textContent = String(value);
+  return el.innerHTML;
 }

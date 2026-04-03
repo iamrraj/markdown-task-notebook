@@ -7,7 +7,7 @@
     "access": "public"
   },
   "bin": {
-    "markdown-notebook": "./bin/markdown-task-notebook.js"
+    "markdown-notebook": "bin/markdown-task-notebook.js"
   },
   "files": [
     "bin",
@@ -28,5 +28,8 @@
     "start": "node server.js",
     "cli": "node ./bin/markdown-task-notebook.js",
     "pack:check": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "@iamrraj/markdown-notebook": "^1.0.0"
   }
 }

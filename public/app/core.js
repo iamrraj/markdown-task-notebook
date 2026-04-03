@@ -19,6 +19,7 @@ export const state = {
   themeSource: "system",
   sidebarCollapsed: false,
   syncScroll: false,
+  focusMode: false,
   splitRatio: 0.52,
   sortBy: "updated",
   hasLoadedFromDisk: false,
@@ -103,6 +104,12 @@ export function initElements() {
     previewHeading: document.getElementById("previewHeading"),
     saveStatus: document.getElementById("saveStatus"),
     documentMeta: document.getElementById("documentMeta"),
+    exitFocusButton: document.getElementById("exitFocusButton"),
+    wordStats: document.getElementById("wordStats"),
+    focusModeButton: document.getElementById("focusModeButton"),
+    shortcutsHelpButton: document.getElementById("shortcutsHelpButton"),
+    shortcutsOverlay: document.getElementById("shortcutsOverlay"),
+    closeShortcutsButton: document.getElementById("closeShortcutsButton"),
     emptyStateTemplate: document.getElementById("emptyStateTemplate"),
     showEditorButton: document.getElementById("showEditorButton"),
     showPreviewButton: document.getElementById("showPreviewButton"),
@@ -112,16 +119,14 @@ export function initElements() {
 }
 
 export function uid() {
-  return `doc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return `doc_${crypto.randomUUID()}`;
 }
 
 export function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  if (value == null) return "";
+  const el = document.createElement("div");
+  el.textContent = String(value);
+  return el.innerHTML;
 }
 
 export function formatDate(dateString) {
@@ -151,6 +156,15 @@ export function deriveTitle(title, content) {
     .map((line) => line.replace(/^#+\s*/, "").trim())
     .find(Boolean);
   return firstLine ? firstLine.slice(0, 60) : "Untitled Task Note";
+}
+
+export function getWordStats(content) {
+  const text = String(content || "").trim();
+  if (!text) return { words: 0, chars: 0, readingTime: "0 min" };
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const chars = text.length;
+  const minutes = Math.max(1, Math.ceil(words / 230));
+  return { words, chars, readingTime: `${minutes} min read` };
 }
 
 export function getExcerpt(content) {

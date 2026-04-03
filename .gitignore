@@ -30,3 +30,5 @@ temp/
 
 # OS / tooling
 Thumbs.db
+.aidesigner/*
+!.aidesigner/.gitkeep

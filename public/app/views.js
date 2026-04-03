@@ -7,9 +7,14 @@ import {
   tagsToInputValue,
   deriveTitle,
   getExcerpt,
+  getWordStats,
   getActiveDocument,
   getFilteredDocuments,
 } from "./core.js";
+
+function sanitize(html) {
+  return window.DOMPurify ? window.DOMPurify.sanitize(html) : html;
+}
 
 import { renderMarkdownSync, unmountMarkdown } from "./markdownRenderer.js";
 
@@ -22,8 +27,11 @@ export function renderRecentList(onOpenDocument) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `recent-item${documentItem.id === state.activeDocumentId ? " active" : ""}`;
+    const title = deriveTitle(documentItem.title, documentItem.content);
+    const initial = (title || "N").charAt(0).toUpperCase();
     button.innerHTML = `
-      <p class="recent-title">${escapeHtml(deriveTitle(documentItem.title, documentItem.content))}</p>
+      <span class="recent-initial">${escapeHtml(initial)}</span>
+      <p class="recent-title">${escapeHtml(title)}</p>
       <p class="recent-date">${escapeHtml(formatDate(documentItem.updatedAt))}</p>
     `;
     button.addEventListener("click", () => onOpenDocument(documentItem.id));
@@ -304,6 +312,11 @@ export function renderEditor() {
   }
   renderMeta(activeDocument);
   renderMarkdown(activeDocument.content);
+
+  if (elements.wordStats) {
+    const stats = getWordStats(activeDocument.content);
+    elements.wordStats.textContent = `${stats.words} words · ${stats.chars} chars · ${stats.readingTime}`;
+  }
 }
 
 export function renderAll(onOpenDocument, onDeleteDocument) {
